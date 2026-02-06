@@ -276,8 +276,8 @@ end
 function SanctumRotationManager.createVermyxP1Rotation()
     return {
         -- Vuln bomb opener
-        {label = "Vulnerability bomb", type = "Inventory", wait = 0},
         {label = "Death Skulls", type = "Ability", wait = 3},
+        {label = "Vulnerability bomb", type = "Inventory", wait = 0},
         {label = "Bloat", type = "Ability", wait = 3},
         {label = "Soul Sap", type = "Ability", wait = 3},
         {label = "Touch of Death", type = "Ability", wait = 3},
@@ -380,6 +380,8 @@ function SanctumRotationManager.createObelisk1Rotation()
         {label = "Finger of Death", type = "Ability", wait = 3},
         {label = "Basic<nbsp>Attack", type = "Ability", wait = 3},
         {label = "Basic<nbsp>Attack", type = "Ability", wait = 3},
+        {label = "Soul Sap", type = "Ability", wait = 3},
+        {label = "Basic<nbsp>Attack", type = "Ability", wait = 3},
         -- After obelisk dies, Life Transfer is handled in the fight handler
         {label = "Improvise", type = "Improvise", spend = true, wait = 3},
     }
@@ -390,8 +392,8 @@ end
 ---@return table rotation steps
 function SanctumRotationManager.createObelisk2Rotation()
     return {
-        {label = "Vulnerability bomb", type = "Inventory", wait = 0},
         {label = "Invoke Death", type = "Ability", wait = 3},
+        {label = "Vulnerability bomb", type = "Inventory", wait = 0},
         {label = "Soul Sap", type = "Ability", wait = 3},
         {label = "Touch of Death", type = "Ability", wait = 3},
         {label = "Basic<nbsp>Attack", type = "Ability", wait = 3},
@@ -399,6 +401,7 @@ function SanctumRotationManager.createObelisk2Rotation()
         {label = "Death Skulls", type = "Ability", wait = 3},
         {label = "Soul Sap", type = "Ability", wait = 3},
         {label = "Volley of Souls", type = "Ability", wait = 3},
+        {label = "Basic<nbsp>Attack", type = "Ability", wait = 3},
         {label = "Improvise", type = "Improvise", spend = true, wait = 3},
     }
 end

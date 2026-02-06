@@ -1136,6 +1136,12 @@ function Kezalam.handleSanctumBlast(allObjects)
         print("No matching blast tile, returning to default position")
     end
 
+    -- Already at the safe tile, no need to move
+    local distToTarget = math.abs(playerTile.x - targetTile.x) + math.abs(playerTile.y - targetTile.y)
+    if distToTarget <= 1 then
+        return false
+    end
+
     API.DoAction_Tile(targetTile)
 
     local timeout = os.clock() + 1.5

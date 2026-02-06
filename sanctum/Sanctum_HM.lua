@@ -847,8 +847,8 @@ local function handleKezalamFight()
     local treasure = API.GetAllObjArrayInteract({SanctumMechanics.IDs.SANCTUM_TREASURE}, 20, {0})
     if treasure and #treasure > 0 then
         Report("*** KEZALAM KILLED ***")
-        API.DoAction_Object1(0x29, API.OFF_ACT_GeneralObject_route0, {treasure[1].ID}, 20)
-        API.RandomSleep2(1800, 1800, 1800) -- wait for chest to open so we can then teleport out immediately after looting
+        API.DoAction_Object1(0x29, API.OFF_ACT_GeneralObject_route0, {SanctumMechanics.IDs.SANCTUM_TREASURE}, 20)
+        API.RandomSleep2(2000, 2000, 2000)  -- wait for chest to open so we can then teleport out immediately after looting
         State.kezalamKilled = true
         return true
     end

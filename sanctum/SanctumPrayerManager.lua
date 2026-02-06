@@ -46,37 +46,27 @@ local PRAYER_BUFFS = {
     RUINATION = 30815,   -- Ruination curse buff (T99)
 }
 
--- Track if damage prayer is active
-local damagePrayerActive = false
 
 ---Activate Sorrow or Ruination (damage curse)
 local function activateDamagePrayer()
     -- Check if already have Ruination or Sorrow active
     if API.Buffbar_GetIDstatus(PRAYER_BUFFS.RUINATION, false).found then
-        damagePrayerActive = true
         return
     end
     if API.Buffbar_GetIDstatus(PRAYER_BUFFS.SORROW, false).found then
-        damagePrayerActive = true
         return
     end
-    
-    -- Try Ruination first (T99), then Sorrow (T95)
-    if not damagePrayerActive then
-        -- Try Ruination
-        local ruinResult = API.DoAction_Ability("Ruination", 1, API.OFF_ACT_GeneralInterface_route)
-        if ruinResult then
-            print("[Prayer] Activated Ruination")
-            damagePrayerActive = true
-            return
-        end
-        -- Try Sorrow
-        local sorrowResult = API.DoAction_Ability("Sorrow", 1, API.OFF_ACT_GeneralInterface_route)
-        if sorrowResult then
-            print("[Prayer] Activated Sorrow")
-            damagePrayerActive = true
-            return
-        end
+
+    -- Neither active - try Ruination first (T99), then Sorrow (T95)
+    local ruinResult = API.DoAction_Ability("Ruination", 1, API.OFF_ACT_GeneralInterface_route)
+    if ruinResult then
+        print("[Prayer] Activated Ruination")
+        return
+    end
+    local sorrowResult = API.DoAction_Ability("Sorrow", 1, API.OFF_ACT_GeneralInterface_route)
+    if sorrowResult then
+        print("[Prayer] Activated Sorrow")
+        return
     end
 end
 
@@ -292,9 +282,27 @@ function SanctumPrayerManager.forceSoulSplit()
     praySoulSplit()
 end
 
----Force deactivate all prayers
+---Force deactivate all prayers by checking each buff and toggling off
 function SanctumPrayerManager.deactivate()
-    API.DoAction_Interface(0xc350, 0xffffffff, 1, 1464, 50, -1, API.OFF_ACT_GeneralInterface_route)
+    local prayers = {
+        {id = PRAYER_BUFFS.SOUL_SPLIT, name = "Soul Split"},
+        {id = PRAYER_BUFFS.DEFLECT_MELEE, name = "Deflect Melee"},
+        {id = PRAYER_BUFFS.DEFLECT_MAGIC, name = "Deflect Magic"},
+        {id = PRAYER_BUFFS.DEFLECT_RANGED, name = "Deflect Ranged"},
+        {id = PRAYER_BUFFS.RUINATION, name = "Ruination"},
+        {id = PRAYER_BUFFS.SORROW, name = "Sorrow"},
+    }
+
+    for _, prayer in ipairs(prayers) do
+        if API.Buffbar_GetIDstatus(prayer.id, false).found then
+            print("[Prayer] Deactivating " .. prayer.name)
+            API.DoAction_Ability(prayer.name, 1, API.OFF_ACT_GeneralInterface_route)
+            API.RandomSleep2(100, 50, 50)
+        end
+    end
+
+    state.prayerOn = false
+    state.tickOn = false
 end
 
 ---Check if currently defending (prayer active)
