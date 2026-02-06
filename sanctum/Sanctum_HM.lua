@@ -669,6 +669,18 @@ local function activateSoulSplit()
     return true
 end
 
+local function activateOffensivePrayers()
+    local RUINATION_BUFF_ID = 30769 -- Ruination buff ID
+
+    local ruinationBuff = API.Buffbar_GetIDstatus(RUINATION_BUFF_ID, false)
+    if not ruinationBuff.found then
+        Report("Activating Ruination prayer...")
+        API.DoAction_Ability("Ruination", 1, API.OFF_ACT_GeneralInterface_route)
+        API.RandomSleep2(300, 60, 90)
+    end
+    return true
+end
+
 
 -- ========================================
 -- SCRIPTURE HANDLING
@@ -742,6 +754,7 @@ local function doPrebuildVermyx()
     API.RandomSleep2(1200, 1200, 1200)
     Report("Starting prebuild...")
     activateSoulSplit()
+    activateOffensivePrayers()
     useOverload()
     necroAbilitySetup()
     activateScripture()
@@ -759,6 +772,7 @@ local function doPrebuildKezalam()
     if State.preBuildKezalam then return true end
     Report("Starting prebuild...")
     activateSoulSplit()
+    --activateOffensivePrayers()
     useOverload()
     necroAbilitySetup()
     activateScripture()

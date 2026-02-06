@@ -42,30 +42,32 @@ local PRAYER_BUFFS = {
     DEFLECT_MELEE = 26040,
     DEFLECT_MAGIC = 26041,
     DEFLECT_RANGED = 26044,
-    SORROW = 30814,      -- Sorrow curse buff
-    RUINATION = 30815,   -- Ruination curse buff (T99)
+    SORROW = 30771,      -- Sorrow curse buff
+    RUINATION = 30769,   -- Ruination curse buff (T99)
 }
 
 
----Activate Sorrow or Ruination (damage curse)
+-- Track if we've already activated the damage prayer this fight
+-- Reset by deactivate() and reset() only
+local damagePrayerActivated = false
+
+---Activate Sorrow or Ruination (damage curse) - only once per fight
 local function activateDamagePrayer()
-    -- Check if already have Ruination or Sorrow active
-    if API.Buffbar_GetIDstatus(PRAYER_BUFFS.RUINATION, false).found then
-        return
-    end
-    if API.Buffbar_GetIDstatus(PRAYER_BUFFS.SORROW, false).found then
+    if damagePrayerActivated then
         return
     end
 
-    -- Neither active - try Ruination first (T99), then Sorrow (T95)
+    -- Try Ruination first (T99), then Sorrow (T95)
     local ruinResult = API.DoAction_Ability("Ruination", 1, API.OFF_ACT_GeneralInterface_route)
     if ruinResult then
         print("[Prayer] Activated Ruination")
+        damagePrayerActivated = true
         return
     end
     local sorrowResult = API.DoAction_Ability("Sorrow", 1, API.OFF_ACT_GeneralInterface_route)
     if sorrowResult then
         print("[Prayer] Activated Sorrow")
+        damagePrayerActivated = true
         return
     end
 end
@@ -275,6 +277,7 @@ function SanctumPrayerManager.reset()
     state.firstTime = true
     state.counter = 0
     state.tickOn = false
+    damagePrayerActivated = false
 end
 
 ---Force Soul Split
@@ -303,6 +306,7 @@ function SanctumPrayerManager.deactivate()
 
     state.prayerOn = false
     state.tickOn = false
+    damagePrayerActivated = false
 end
 
 ---Check if currently defending (prayer active)
