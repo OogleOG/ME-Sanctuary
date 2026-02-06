@@ -111,6 +111,13 @@ local States = {
     NAKATRA_COMPLETE = 18,
     TELEPORTING_OUT = 19,
     DEATH_RECOVERY = 20,
+    -- Mid-run resupply (after Kezalam, before Nakatra)
+    RESUPPLY_TELEPORT_OUT = 21,
+    RESUPPLY_BANKING = 22,
+    RESUPPLY_ALTAR = 23,
+    RESUPPLY_ADRENALINE = 24,
+    RESUPPLY_ENTER_PORTAL = 25,
+    RESUPPLY_ENTER_INSTANCE = 26,
 }
 
 -- ========================================
@@ -840,9 +847,6 @@ local function handleKezalamFight()
     local treasure = API.GetAllObjArrayInteract({SanctumMechanics.IDs.SANCTUM_TREASURE}, 20, {0})
     if treasure and #treasure > 0 then
         Report("*** KEZALAM KILLED ***")
-        -- SanctumMechanics.lootTreasure() -- we aren't going to bother with looting, we will just loot build the loot in the treasure chest
-        -- todo, teleport back to wars, restore, load last preset and then go back ready to fight nakatra with all buffs and supplies ready
-        -- we must also turn off prayers that are activated
         State.kezalamKilled = true
         return true
     end
@@ -1288,9 +1292,48 @@ local function executeState()
         if handleKezalamFight() then State.currentState = States.KEZALAM_COMPLETE end
         
     elseif state == States.KEZALAM_COMPLETE then
-        Report("Kezalam complete!")
-        State.currentState = States.TRANSITIONING_TO_NAKATRA
-        
+        Report("Kezalam complete! Teleporting to War's Retreat to resupply...")
+        State.currentState = States.RESUPPLY_TELEPORT_OUT
+
+    elseif state == States.RESUPPLY_TELEPORT_OUT then
+        Utils.postKillCleanup()
+        API.DoAction_Ability("War's Retreat Teleport", 1, API.OFF_ACT_GeneralInterface_route, true)
+        API.RandomSleep2(3000, 600, 900)
+        Utils.waitForIdle(50)
+        API.RandomSleep2(2000, 400, 600)
+        Report("Back at War's Retreat for resupply")
+        State.currentState = States.RESUPPLY_BANKING
+
+    elseif state == States.RESUPPLY_BANKING then
+        if WarsRetreat.bank() then State.currentState = States.RESUPPLY_ALTAR end
+
+    elseif state == States.RESUPPLY_ALTAR then
+        if WarsRetreat.useAltar() then State.currentState = States.RESUPPLY_ADRENALINE end
+
+    elseif state == States.RESUPPLY_ADRENALINE then
+        if WarsRetreat.useAdrenalineCrystal() then State.currentState = States.RESUPPLY_ENTER_PORTAL end
+
+    elseif state == States.RESUPPLY_ENTER_PORTAL then
+        if WarsRetreat.enterPortal() then State.currentState = States.RESUPPLY_ENTER_INSTANCE end
+
+    elseif state == States.RESUPPLY_ENTER_INSTANCE then
+        if WarsRetreat.enterInstance() then
+            local location = detectLocation()
+            Report("Re-entered instance at: " .. location)
+            if location == "NAKATRA_ENTRANCE" then
+                State.currentState = States.CROSSING_GAP_NAKATRA
+            elseif location == "NAKATRA_ARENA" then
+                State.currentState = States.FIGHTING_NAKATRA
+            elseif location == "LOOT_ROOM" then
+                SanctumMechanics.lootTreasure()
+                State.currentState = States.TRANSITIONING_TO_NAKATRA
+            elseif location == "TRANSITION" then
+                State.currentState = States.TRANSITIONING_TO_NAKATRA
+            else
+                State.currentState = States.TRANSITIONING_TO_NAKATRA
+            end
+        end
+
     elseif state == States.TRANSITIONING_TO_NAKATRA then
         if SanctumMechanics.useArchway() then State.currentState = States.CROSSING_GAP_NAKATRA end
         
@@ -1350,6 +1393,12 @@ local STATE_NAMES = {
     [States.NAKATRA_COMPLETE] = "Looting",
     [States.TELEPORTING_OUT] = "Teleporting",
     [States.DEATH_RECOVERY] = "Death Recovery",
+    [States.RESUPPLY_TELEPORT_OUT] = "Resupply",
+    [States.RESUPPLY_BANKING] = "Resupply",
+    [States.RESUPPLY_ALTAR] = "Resupply",
+    [States.RESUPPLY_ADRENALINE] = "Resupply",
+    [States.RESUPPLY_ENTER_PORTAL] = "Resupply",
+    [States.RESUPPLY_ENTER_INSTANCE] = "Resupply",
 }
 
 local BOSS_NAMES = {
@@ -1416,7 +1465,13 @@ local function buildGUIData()
         State.currentState == States.VERMYX_COMPLETE or
         State.currentState == States.KEZALAM_COMPLETE or
         State.currentState == States.TRANSITIONING_TO_KEZALAM or
-        State.currentState == States.TRANSITIONING_TO_NAKATRA) then
+        State.currentState == States.TRANSITIONING_TO_NAKATRA or
+        State.currentState == States.RESUPPLY_TELEPORT_OUT or
+        State.currentState == States.RESUPPLY_BANKING or
+        State.currentState == States.RESUPPLY_ALTAR or
+        State.currentState == States.RESUPPLY_ADRENALINE or
+        State.currentState == States.RESUPPLY_ENTER_PORTAL or
+        State.currentState == States.RESUPPLY_ENTER_INSTANCE) then
         local elapsed = os.time() - runStartTime
         killTimer = string.format("%02d:%02d", math.floor(elapsed / 60), elapsed % 60)
     end

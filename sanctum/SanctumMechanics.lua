@@ -111,7 +111,7 @@ local IDs = {
     SCARAB_SUMMON = "Erggg",
     
     -- NAKATRA MECHANICS
-    NAKATRA_GAP = 130666,
+    NAKATRA_GAP = 130678,
     NAKATRA_ENTRANCE = 130665,
     
     -- SHARED
@@ -1404,11 +1404,23 @@ local Nakatra = {}
 
 function Nakatra.crossGap()
     debugLog("Crossing gap to Nakatra")
-    if API.DoAction_Object1(0x39, API.OFF_ACT_GeneralObject_route0, {IDs.NAKATRA_GAP}, 50) then
-        API.RandomSleep2(2000, 500, 500)
-        return true
+    -- Step 1: Click the gap to initiate
+    if not API.DoAction_Object1(0x29, API.OFF_ACT_GeneralObject_route0, {IDs.NAKATRA_GAP}, 50) then
+        debugLog("Failed to click Nakatra gap")
+        return false
     end
-    return false
+    API.RandomSleep2(600, 50, 100)
+
+    -- Step 2: Surge across
+    API.DoAction_Ability("Surge", 1, API.OFF_ACT_GeneralInterface_route)
+    API.RandomSleep2(300, 50, 100)
+
+    -- Step 3: Click the gap again to start crossing
+    API.DoAction_Object1(0x29, API.OFF_ACT_GeneralObject_route0, {IDs.NAKATRA_GAP}, 50)
+    API.RandomSleep2(8000, 8000, 8000)
+
+    debugLog("Nakatra gap crossed")
+    return true
 end
 
 SanctumMechanics.Nakatra = Nakatra
