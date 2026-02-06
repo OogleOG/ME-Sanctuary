@@ -1487,7 +1487,7 @@ function SanctumMechanics.lootTreasure()
     local chest = API.GetAllObjArrayInteract({IDs.SANCTUM_TREASURE}, 20, {0})
     if chest and #chest > 0 then
         debugLog("Looting treasure chest")
-        API.DoAction_Object1(0x29, API.OFF_ACT_GeneralObject_route0, {IDs.SANCTUM_TREASURE}, 50)
+        API.DoAction_Object1(0x29, API.OFF_ACT_GeneralObject_route0, {IDs.SANCTUM_TREASURE}, 20)
         API.RandomSleep2(2000, 300, 400)
         API.DoAction_Interface(0x24,0xffffffff,1,168,27,-1,API.OFF_ACT_GeneralInterface_route)
         API.RandomSleep2(500, 100, 200)
